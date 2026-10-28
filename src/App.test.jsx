@@ -63,6 +63,16 @@ test('supports editing and deleting expenses', () => {
   expect(screen.queryByText('Metro Pass')).not.toBeInTheDocument()
 })
 
+test('toggles dark mode and persists the selected theme', () => {
+  render(<App />)
+
+  const toggle = screen.getByRole('button', { name: /dark mode/i })
+  fireEvent.click(toggle)
+
+  expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
+  expect(window.localStorage.getItem('expense-tracker-theme-v1')).toBe('"dark"')
+})
+
 test('filters expenses and keeps visible total in sync', () => {
   render(<App />)
 

@@ -3,6 +3,7 @@ import './App.css'
 
 const STORAGE_KEY = 'expense-tracker-expenses-v1'
 const BUDGET_KEY = 'expense-tracker-budget-v1'
+const THEME_KEY = 'expense-tracker-theme-v1'
 const CATEGORIES = ['Food', 'Travel', 'Bills', 'Other']
 const MONTH_NAMES = [
   'January',
@@ -80,6 +81,23 @@ function loadBudget() {
   }
 }
 
+function loadTheme() {
+  if (typeof window === 'undefined') {
+    return 'light'
+  }
+
+  try {
+    const saved = localStorage.getItem(THEME_KEY)
+    if (!saved) {
+      return 'light'
+    }
+
+    return saved === 'dark' ? 'dark' : 'light'
+  } catch {
+    return 'light'
+  }
+}
+
 function prettyMoney(value) {
   return `₹${Number(value || 0).toFixed(2)}`
 }
@@ -123,6 +141,7 @@ function App() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [deleteTargetId, setDeleteTargetId] = useState(null)
   const [pendingClearAll, setPendingClearAll] = useState(false)
+  const [theme, setTheme] = useState(loadTheme)
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses))
@@ -131,6 +150,11 @@ function App() {
   useEffect(() => {
     localStorage.setItem(BUDGET_KEY, JSON.stringify(budget))
   }, [budget])
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem(THEME_KEY, JSON.stringify(theme))
+  }, [theme])
 
   const visibleExpenses = useMemo(() => {
     const trimmedSearch = searchTerm.trim().toLowerCase()
@@ -358,9 +382,19 @@ function App() {
           <p className="eyebrow">Expense Tracker</p>
           <h1>Manage your spending</h1>
         </div>
-        <button type="button" className="danger-button" onClick={() => setPendingClearAll(true)}>
-          Clear All
-        </button>
+        <div className="header-actions">
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          </button>
+          <button type="button" className="danger-button" onClick={() => setPendingClearAll(true)}>
+            Clear All
+          </button>
+        </div>
       </header>
 
       <main className="tracker-grid">
