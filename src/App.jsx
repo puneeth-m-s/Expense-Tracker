@@ -213,6 +213,12 @@ function App() {
 
   const remainingBudget = budget - monthlyTotal
   const budgetWarning = budget > 0 && monthlyTotal >= budget
+  const budgetUsage = budget > 0 ? Math.min((monthlyTotal / budget) * 100, 100) : 0
+  const budgetStatusLabel = remainingBudget >= 0 ? 'On track' : 'Over budget'
+  const hasExpenses = expenses.length > 0
+  const topCategory = hasExpenses
+    ? Object.entries(statistics.categoryTotals).sort(([, a], [, b]) => b - a)[0]
+    : null
 
   const validateExpense = (data) => {
     const trimmedTitle = data.title.trim()
@@ -363,6 +369,24 @@ function App() {
         </button>
       </header>
 
+      <section className="summary-strip" aria-label="Expense summary">
+        <div className="summary-card accent-card">
+          <span>Monthly spend</span>
+          <strong>{prettyMoney(monthlyTotal)}</strong>
+          <small>{MONTH_NAMES[selectedMonth]} {selectedYear}</small>
+        </div>
+        <div className="summary-card">
+          <span>Budget left</span>
+          <strong>{prettyMoney(remainingBudget)}</strong>
+          <small className={budgetWarning ? 'negative' : 'positive'}>{budgetStatusLabel}</small>
+        </div>
+        <div className="summary-card">
+          <span>Top category</span>
+          <strong>{topCategory ? topCategory[0] : '—'}</strong>
+          <small>{topCategory ? prettyMoney(topCategory[1]) : 'No expenses yet'}</small>
+        </div>
+      </section>
+
       <main className="tracker-grid">
         <section className="panel form-panel" aria-label="Expense form">
           <h2>{editId ? 'Edit Expense' : 'Add Expense'}</h2>
@@ -489,6 +513,9 @@ function App() {
             <p className="budget-summary">
               Budget: <strong>{prettyMoney(budget)}</strong>
             </p>
+            <div className="progress-wrap" aria-label="budget usage progress">
+              <div className="progress-bar" style={{ width: `${budget > 0 ? Math.min(budgetUsage, 100) : 0}%` }} />
+            </div>
             <p className={`budget-summary ${budgetWarning ? 'warning' : ''}`}>
               Remaining: <strong>{prettyMoney(remainingBudget)}</strong>
             </p>
